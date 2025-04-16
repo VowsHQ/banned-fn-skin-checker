@@ -45,3 +45,7 @@ Not all exclusives are shown
 * It matches your items against the database
 * Images are downloaded for each item and cached locally
 * Image grids are created with proper formatting and color coding
+
+# Credits
+Checker based the checker https://github.com/neksiak made
+uses fortnite api
