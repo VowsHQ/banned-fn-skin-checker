@@ -48,4 +48,3 @@ Not all exclusives are shown
 
 # Credits
 Checker based the checker https://github.com/neksiak made
-uses fortnite api
