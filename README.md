@@ -1,16 +1,57 @@
 # Fortnite Banned Account Locker Checker
 This tool allows you to view all your Fortnite cosmetic items by extracting them from your Epic Games account data, even if your account is banned.
 
-# Categories Supported
-**this checker scans for exclusives aswell.**
-* Outfits (AthenaCharacter)
-* Back Blings (AthenaBackpack)
-* Pickaxes (AthenaPickaxe)
-* Gliders (AthenaGlider)
-* Contrails (AthenaSkyDiveContrail)
-* Emotes (only dances, doesn't support sprays and emojis) (AthenaDance)
-* Music Packs (AthenaMusicPack)
-* Wraps (AthenaItemWrap)
+# Update Logs
+```
+Checker now provides an image of ALL Cosmetics
+
+(Skins that now show as exclusive)
++ Yellow Jacket
++ Astro Jack
++ BlueStriker
++ Trailblazer
++ StealthReflex
++ Neoversa
++ Aloy
++ Kratos
++ MasterCheif
++ Carbon Commando
++ Warpaint
++ Rose Team Leader
++ Prodigy
+
+(Pickaxes that now show as exclusive)
++ Merry mint
++ Trusty no.2
++ AC/DC
++ Snowtooth
++ Dark Splitter
++ Cymitar
++ Electri-claw
++ plasma carrot
++ synaptic hatchets
++ twin talons
++ perfect point
++ (Much much more)
+
+(Gliders that now show as exclusive)
++ FounderGlider/Umbrella
++ Blue Streak
++ Discovery
++ Flappy
++ SLipstream
++ Aurora
++ Wild Streak
++ Dark Forerunner
++ Stealth Pivot
++ Rose Rider
++ Coaxial
++ Astro World Cyclone
++ (and more)
+
+(Wraps that will now show as exclusive)
++ Cuddle hearts
+```
 
 # Requirements
 * .NET (https://dotnet.microsoft.com/en-us/download)
@@ -45,6 +86,7 @@ Not all exclusives are shown
 * It matches your items against the database
 * Images are downloaded for each item and cached locally
 * Image grids are created with proper formatting and color coding
+
 
 # Credits
 Checker based the checker https://github.com/neksiak made
