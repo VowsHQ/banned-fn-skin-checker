@@ -3,7 +3,9 @@ This tool allows you to view all your Fortnite cosmetic items by extracting them
 
 # Update Logs
 ```
+
 Checker now provides an image of ALL Cosmetics
+Also updated the spacing between skins and made so most text will appear under the skins instead of overlapping.
 
 (Skins that now show as exclusive)
 + Yellow Jacket
