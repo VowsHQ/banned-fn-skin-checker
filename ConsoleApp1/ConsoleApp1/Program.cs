@@ -677,11 +677,11 @@ namespace FortniteLocker
                     int cols = (int)Math.Ceiling(Math.Sqrt(itemCount * 1.5));
                     int rows = (int)Math.Ceiling((double)itemCount / cols);
 
-                    int thumbnailSize = Math.Max(60, Math.Min(150, 900 / cols));
-                    int horizontalSpacing = Math.Max(8, thumbnailSize / 10);
+                    int thumbnailSize = Math.Max(80, Math.Min(200, 1200 / cols));
+                    int horizontalSpacing = 0;
                     int verticalSpacing = Math.Max(40, thumbnailSize / 2);
                     int textHeight = Math.Max(16, thumbnailSize / 6);
-                    int padding = 3;
+                    int padding = 5;
 
                     int margin = 60;
                     int canvasWidth = margin * 2 + cols * (thumbnailSize + horizontalSpacing);
@@ -691,9 +691,8 @@ namespace FortniteLocker
                     using var graphics = Graphics.FromImage(lockerImage);
                     graphics.Clear(Color.FromArgb(25, 25, 35));
 
-                    var fontSize = Math.Max(12, thumbnailSize / 8);
-                    var titleFontSize = Math.Max(24, (int)(fontSize * 1.8));
-                    var font = new Font("Arial", fontSize);
+                    var baseFontSize = Math.Max(12, thumbnailSize / 8);
+                    var titleFontSize = Math.Max(24, (int)(baseFontSize * 1.8));
                     var titleFont = new Font("Arial", titleFontSize);
 
                     string categoryName = category.Replace("Athena", "");
@@ -798,23 +797,35 @@ namespace FortniteLocker
                             graphics.DrawImage(result.Image, x, y, thumbnailSize, thumbnailSize);
 
                             string nameToDisplay = itemData["name"]?.ToString() ?? itemId;
-                            if (nameToDisplay.Length > thumbnailSize / 4)
+                            int maxLength = (int)(thumbnailSize / baseFontSize * 2);
+                            if (nameToDisplay.Length > maxLength)
                             {
-                                nameToDisplay = nameToDisplay.Substring(0, thumbnailSize / 4) + "...";
+                                nameToDisplay = nameToDisplay.Substring(0, maxLength - 3) + "...";
+                            }
+
+                            float fontSize = baseFontSize;
+                            var font = new Font("Arial", fontSize);
+                            var textSize = graphics.MeasureString(nameToDisplay, font);
+                            while (textSize.Width > thumbnailSize && fontSize > 8)
+                            {
+                                fontSize -= 1;
+                                font.Dispose();
+                                font = new Font("Arial", fontSize);
+                                textSize = graphics.MeasureString(nameToDisplay, font);
                             }
 
                             int textY = y + thumbnailSize + 8;
-                            var textSize = graphics.MeasureString(nameToDisplay, font);
                             var bgRect = new RectangleF(
-                                x + (thumbnailSize - textSize.Width) / 2 - padding,
+                                x,
                                 textY - padding,
-                                textSize.Width + 2 * padding,
+                                thumbnailSize,
                                 fontSize + 2 * padding
                             );
 
                             graphics.FillRectangle(new SolidBrush(Color.FromArgb(180, 0, 0, 0)), bgRect);
                             graphics.DrawString(nameToDisplay, font, Brushes.Black, x + thumbnailSize / 2 + 1, textY + 1, new StringFormat { Alignment = StringAlignment.Center });
                             graphics.DrawString(nameToDisplay, font, Brushes.White, x + thumbnailSize / 2, textY, new StringFormat { Alignment = StringAlignment.Center });
+                            font.Dispose();
                         }
                         else
                         {
@@ -823,9 +834,21 @@ namespace FortniteLocker
                             graphics.FillRectangle(new SolidBrush(Color.FromArgb(40, 40, 40)), x + 3, y + 3, thumbnailSize - 6, thumbnailSize - 6);
 
                             string displayName = itemId;
-                            if (displayName.Length > 12)
+                            int maxLength = (int)(thumbnailSize / baseFontSize * 2);
+                            if (displayName.Length > maxLength)
                             {
-                                displayName = displayName.Substring(0, 10) + "...";
+                                displayName = displayName.Substring(0, maxLength - 3) + "...";
+                            }
+
+                            float fontSize = baseFontSize;
+                            var font = new Font("Arial", fontSize);
+                            var textSize = graphics.MeasureString(displayName, font);
+                            while (textSize.Width > thumbnailSize && fontSize > 8)
+                            {
+                                fontSize -= 1;
+                                font.Dispose();
+                                font = new Font("Arial", fontSize);
+                                textSize = graphics.MeasureString(displayName, font);
                             }
 
                             graphics.DrawString("?", titleFont, Brushes.Gray, x + thumbnailSize / 2, y + thumbnailSize / 2 - 10, new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center });
@@ -834,6 +857,7 @@ namespace FortniteLocker
                             int textY = y + thumbnailSize + 8;
                             graphics.FillRectangle(new SolidBrush(Color.FromArgb(100, 30, 30)), x, textY, thumbnailSize, fontSize + 6);
                             graphics.DrawString("Not Found", font, Brushes.Pink, x + thumbnailSize / 2, textY + 3, new StringFormat { Alignment = StringAlignment.Center });
+                            font.Dispose();
                         }
                     }
 
@@ -905,11 +929,11 @@ namespace FortniteLocker
                 int cols = (int)Math.Ceiling(Math.Sqrt(itemCount * 1.5));
                 int rows = (int)Math.Ceiling((double)itemCount / cols);
 
-                int thumbnailSize = Math.Max(60, Math.Min(150, 900 / cols));
-                int horizontalSpacing = Math.Max(8, thumbnailSize / 10);
+                int thumbnailSize = Math.Max(80, Math.Min(200, 1200 / cols));
+                int horizontalSpacing = 0;
                 int verticalSpacing = Math.Max(40, thumbnailSize / 2);
                 int textHeight = Math.Max(16, thumbnailSize / 6);
-                int padding = 3;
+                int padding = 5;
 
                 int margin = 60;
                 int canvasWidth = margin * 2 + cols * (thumbnailSize + horizontalSpacing);
@@ -919,9 +943,8 @@ namespace FortniteLocker
                 using var combinedGraphics = Graphics.FromImage(combinedImage);
                 combinedGraphics.Clear(Color.FromArgb(25, 25, 35));
 
-                var fontSize = Math.Max(12, thumbnailSize / 8);
-                var titleFontSize = Math.Max(24, (int)(fontSize * 1.8));
-                var font = new Font("Arial", fontSize);
+                var baseFontSize = Math.Max(12, thumbnailSize / 8);
+                var titleFontSize = Math.Max(24, (int)(baseFontSize * 1.8));
                 var titleFont = new Font("Arial", titleFontSize);
 
                 // Draw main title
@@ -963,23 +986,35 @@ namespace FortniteLocker
                         combinedGraphics.DrawImage(item.Image, x, y, thumbnailSize, thumbnailSize);
 
                         string nameToDisplay = itemData["name"]?.ToString() ?? item.ItemId;
-                        if (nameToDisplay.Length > thumbnailSize / 4)
+                        int maxLength = (int)(thumbnailSize / baseFontSize * 2);
+                        if (nameToDisplay.Length > maxLength)
                         {
-                            nameToDisplay = nameToDisplay.Substring(0, thumbnailSize / 4) + "...";
+                            nameToDisplay = nameToDisplay.Substring(0, maxLength - 3) + "...";
+                        }
+
+                        float fontSize = baseFontSize;
+                        var font = new Font("Arial", fontSize);
+                        var textSize = combinedGraphics.MeasureString(nameToDisplay, font);
+                        while (textSize.Width > thumbnailSize && fontSize > 8)
+                        {
+                            fontSize -= 1;
+                            font.Dispose();
+                            font = new Font("Arial", fontSize);
+                            textSize = combinedGraphics.MeasureString(nameToDisplay, font);
                         }
 
                         int textY = y + thumbnailSize + 8;
-                        var textSize = combinedGraphics.MeasureString(nameToDisplay, font);
                         var bgRect = new RectangleF(
-                            x + (thumbnailSize - textSize.Width) / 2 - padding,
+                            x,
                             textY - padding,
-                            textSize.Width + 2 * padding,
+                            thumbnailSize,
                             fontSize + 2 * padding
                         );
 
                         combinedGraphics.FillRectangle(new SolidBrush(Color.FromArgb(180, 0, 0, 0)), bgRect);
                         combinedGraphics.DrawString(nameToDisplay, font, Brushes.Black, x + thumbnailSize / 2 + 1, textY + 1, new StringFormat { Alignment = StringAlignment.Center });
                         combinedGraphics.DrawString(nameToDisplay, font, Brushes.White, x + thumbnailSize / 2, textY, new StringFormat { Alignment = StringAlignment.Center });
+                        font.Dispose();
                     }
                     else
                     {
@@ -987,9 +1022,21 @@ namespace FortniteLocker
                         combinedGraphics.FillRectangle(new SolidBrush(Color.FromArgb(40, 40, 40)), x + 3, y + 3, thumbnailSize - 6, thumbnailSize - 6);
 
                         string displayName = item.ItemId;
-                        if (displayName.Length > 12)
+                        int maxLength = (int)(thumbnailSize / baseFontSize * 2);
+                        if (displayName.Length > maxLength)
                         {
-                            displayName = displayName.Substring(0, 10) + "...";
+                            displayName = displayName.Substring(0, maxLength - 3) + "...";
+                        }
+
+                        float fontSize = baseFontSize;
+                        var font = new Font("Arial", fontSize);
+                        var textSize = combinedGraphics.MeasureString(displayName, font);
+                        while (textSize.Width > thumbnailSize && fontSize > 8)
+                        {
+                            fontSize -= 1;
+                            font.Dispose();
+                            font = new Font("Arial", fontSize);
+                            textSize = combinedGraphics.MeasureString(displayName, font);
                         }
 
                         combinedGraphics.DrawString("?", titleFont, Brushes.Gray, x + thumbnailSize / 2, y + thumbnailSize / 2 - 10, new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center });
@@ -998,6 +1045,7 @@ namespace FortniteLocker
                         int textY = y + thumbnailSize + 8;
                         combinedGraphics.FillRectangle(new SolidBrush(Color.FromArgb(100, 30, 30)), x, textY, thumbnailSize, fontSize + 6);
                         combinedGraphics.DrawString("Not Found", font, Brushes.Pink, x + thumbnailSize / 2, textY + 3, new StringFormat { Alignment = StringAlignment.Center });
+                        font.Dispose();
                     }
                 }
 
