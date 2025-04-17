@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
@@ -291,6 +291,19 @@ namespace FortniteLocker
                 var exclusiveItems = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
                 {
                     // Characters
+                    "cid_095_athena_commando_m_founder", //warpaint
+                    "cid_096_athena_commando_f_founder", // rose team leader
+                    "cid_296_athena_commando_m_math", //Prodigy
+                    "cid_360_athena_commando_m_techopsblue", //Carbon Commander
+                    "cid_138_athena_commando_m_psburnout", //Blue Striker
+                    "cid_114_athena_commando_f_tacticalwoodland", //Trailblazer
+                    "cid_386_athena_commando_m_streetopsstealth", //Stealth Reflex
+                    "cid_441_athena_commando_f_cyberscavengerblue", //neoversa
+                    "cid_a_062_athena_commando_f_alchemy_xd6gp", //Aloy
+                    "cid_964_athena_commando_m_historian_869bc", //Kratos
+                    "cid_971_Athena_Commando_M_Jupiter_S0Z6M", //MasterCheif
+                    "cid_760_athena_commando_f_neontightsuit", //astro jack
+                    "cid_748_athena_commando_f_hitman", //YellowJacket
                     "cid_022_athena_commando_m_galaxy", // Galaxy
                     "cid_295_athena_commando_m_carbideblue", // Eon
                     "cid_313_athena_commando_m_venom", // Rogue Spider Knight
@@ -316,6 +329,18 @@ namespace FortniteLocker
                     "cid_677_athena_commando_f_dieselpunk", // Iris (Roundabout)
                     "cid_703_athena_commando_m_giftbox", // Ikonik
                     // Normalized names for Characters
+                    "Rose team leader",
+                    "prodigy",
+                    "Carbon Commando",
+                    "BlueStriker",
+                    "Trailblazer",
+                    "StealthReflex",
+                    "neoversa",
+                    "Aloy",
+                    "Kratos",
+                    "MasterCheif",
+                    "astrojack",
+                    "yellowjacket",
                     "galaxy",
                     "eon",
                     "roguespiderknight",
@@ -341,22 +366,83 @@ namespace FortniteLocker
                     "iris",
                     "ikonik",
                     // Pickaxes
-                    "pickaxe_id_162_galactic", // Galaxy Crossfade
-                    "pickaxe_id_135_carbideblue", // Eon Blades
-                    "pickaxe_id_007_hiphop", // Aerial Assault One
-                    "pickaxe_id_011_medieval", // Raider's Revenge
-                    "pickaxe_id_311_tourbus", // Nintendo Switch pickaxe
-                    "pickaxe_id_273_candy", // Merry Mint
-                    "galaxycrossfade",
-                    "eonblades",
-                    "aerialassaultone",
-                    "raidersrevenge",
-                    "merrymint",
+                    "Pickaxe_ID_602_TaxiUpgradedMulticolorFemale",
+                    "Pickaxe_ID_029_Assassin",
+                    "Pickaxe_ID_013_Teslacoil",
+                    "Pickaxe_ID_757_BlizzardBomberFemale1H",
+                    "Pickaxe_ID_717_NetworkFemale",
+                    "Pickaxe_ID_461_SkullBriteCube",
+                    "Pickaxe_ID_398_WildCatFemale",
+                    "Pickaxe_ID_195_SpaceBunny",
+                    "Pickaxe_ID_560_TacticalWoodlandBlueMale",
+                    "Pickaxe_ID_338_BandageNinjaBlue1H",
+                    "Pickaxe_ID_400_AquaJacketMale",
+                    "Pickaxe_ID_464_LongShortsMale",
+                    "Pickaxe_ID_447_SpaceWandererMale",
+                    "Pickaxe_ID_256_TechOpsBlue",
+                    "Pickaxe_ID_178_SpeedyMidnight",
+                    "Pickaxe_ID_116_Celestial",
+                    "Pickaxe_ID_077_CarbideWhite", //Resonator
+                    "Pickaxe_ID_088_PSBurnout", //Controller
+                    "Pickaxe_ID_237_Warpaint", //Mean Streak
+                    "pickaxe_id_294_candycane", // Merry Mint
+                    "pickaxe_id_099_modernmilitaryred", //pinpoint
+                    "pickaxe_id_039_tacticalblack", //instigator
+                    "Pickaxe_ID_044_TacticalUrbanHammer", //Tenderizer
+                    "Pickaxe_ID_153_RoseLeader", //rose glow
+                    //Normalized pickaxe names
+                    "Drive Shaft",
+                    "Trusty no.2",
+                    "AC/DC",
+                    "Snowtooth",
+                    "Cymitar",
+                    "Dark Splitter",
+                    "Electri-claw",
+                    "Plasma Carrot",
+                    "Synaptic Hatchets",
+                    "Twin Talons",
+                    "Wavecrest",
+                    "Perfect Point",
+                    "Shooting Starstaff",
+                    "Pneumatic Twin",
+                    "Dark Razor",
+                    "Stellar Axe",
+                    "Resonator",
+                    "Controller",
+                    "Mean Streak",
+                    "Merry Mint",
+                    "Pinpoint",
+                    "Instigator",
+                    "Tenderizer",
+                    "Rose Glow",
                     // Gliders
-                    "glider_id_032_carbideblue", // Eon Wings
-                    "glider_id_002_retrogamer", // Aerial Assault
-                    "eonwings",
-                    "aerialassault",
+                    "FounderGlider",
+                    "FounderUmbrella",
+                    "Glider_ID_013_PSBlue",
+                    "Glider_ID_090_Celestial",
+                    "Glider_ID_018_Twitch",
+                    "Glider_ID_067_PSBurnout",
+                    "Glider_ID_056_CarbideWhite",
+                    "Glider_ID_117_Warpaint",
+                    "Glider_ID_137_StreetOpsStealth",
+                    "Glider_ID_131_SpeedyMidnight",
+                    "Glider_ID_150_TechOpsBlue",
+                    "Glider_ID_161_RoseLeader",
+                    "Glider_ID_196_CycloneMale",
+                    // Normalized glider names
+                    "FounderGlider",
+                    "FounderUmbrella",
+                    "Blue Streak",
+                    "Discovery",
+                    "Slipstream",
+                    "Flappy",
+                    "Aurora",
+                    "Wild Streak",
+                    "Stealth Pivot",
+                    "Dark Forerunner",
+                    "Coaxial Blue",
+                    "Rose Rider",
+                    "Astro World Cyclone",
                     // Backpacks
                     "bid_027_carbideblue", // Eon Shield
                     "bid_002_medieval", // Black Shield (Black Knight)
@@ -366,7 +452,9 @@ namespace FortniteLocker
                     "eid_tourbus", // Wildcat emote
                     // Contrails, Music, Wraps
                     "wrap_022_galactic", // Galaxy wrap
-                    "galactic"
+                    "Wrap_016_CuddleTeam",
+                    "galactic",
+                    "Cuddle Hearts"
                 };
 
                 var downloader = new ImageDownloader(maxWorkers: 15, cacheDir: "cosmetics_cache");
@@ -526,7 +614,7 @@ namespace FortniteLocker
                     return null;
                 }
 
-                async Task<(string Category, int Found, int NotFound, double Time)> ProcessCategoryAsync(string category)
+                async Task<(string Category, int Found, int NotFound, double Time, List<(string ItemId, JToken ItemData, bool IsExclusive, Image Image, bool Found)> Items)> ProcessCategoryAsync(string category)
                 {
                     var categoryStart = DateTime.Now;
                     Console.WriteLine($"\nStarting category: {category}");
@@ -536,7 +624,7 @@ namespace FortniteLocker
                     if (!File.Exists(filePath))
                     {
                         Console.WriteLine($"File not found: {filePath}");
-                        return (category, 0, 0, 0);
+                        return (category, 0, 0, 0, new List<(string, JToken, bool, Image, bool)>());
                     }
 
                     var itemIds = (await File.ReadAllLinesAsync(filePath)).Select(line => line.Trim()).Where(line => !string.IsNullOrEmpty(line)).ToList();
@@ -544,7 +632,7 @@ namespace FortniteLocker
                     if (!itemIds.Any())
                     {
                         Console.WriteLine($"No items found in {filePath}");
-                        return (category, 0, 0, 0);
+                        return (category, 0, 0, 0, new List<(string, JToken, bool, Image, bool)>());
                     }
 
                     Console.WriteLine($"Category: {category}, Items found: {itemIds.Count}");
@@ -617,6 +705,7 @@ namespace FortniteLocker
                     int notFoundCount = 0;
 
                     var results = new ConcurrentBag<(int Index, int X, int Y, string ItemId, bool Found, Image Image, JToken ItemData, bool IsExclusive)>();
+                    var processedItems = new List<(string ItemId, JToken ItemData, bool IsExclusive, Image Image, bool Found)>();
 
                     async Task ProcessItemAsync(int i, (string ItemId, JToken ItemData, bool IsExclusive) item)
                     {
@@ -672,6 +761,7 @@ namespace FortniteLocker
                         }
 
                         results.Add(result);
+                        processedItems.Add((item.ItemId, item.ItemData, item.IsExclusive, result.Image, result.Found));
                     }
 
                     await Task.WhenAll(sortedItems.Select((item, i) => ProcessItemAsync(i, item)));
@@ -752,14 +842,169 @@ namespace FortniteLocker
 
                     double categoryTime = (DateTime.Now - categoryStart).TotalSeconds;
                     Console.WriteLine($"Created image for {category}: [{foundCount}] items found, [{notFoundCount}] not found", Color.GhostWhite);
-                    Console.WriteLine($"Total time for {category}: [{categoryTime:F2]}s", Color.GhostWhite);
+                    Console.WriteLine($"Total time for {category}: [{categoryTime:F2}]s", Color.GhostWhite);
 
-                    return (category, foundCount, notFoundCount, categoryTime);
+                    return (category, foundCount, notFoundCount, categoryTime, processedItems);
                 }
 
-                var results = new List<(string Category, int Found, int NotFound, double Time)>();
+                var results = new List<(string Category, int Found, int NotFound, double Time, List<(string ItemId, JToken ItemData, bool IsExclusive, Image Image, bool Found)> Items)>();
                 var tasks = Categories.Keys.Select(category => ProcessCategoryAsync(category)).ToList();
                 results.AddRange(await Task.WhenAll(tasks));
+
+                // Generate combined image
+                Console.WriteLine("\nGenerating combined cosmetics image...", Color.GhostWhite);
+                var combinedStart = DateTime.Now;
+
+                // Collect all items from all categories
+                var allItems = new List<(string ItemId, JToken ItemData, bool IsExclusive, Image Image, bool Found)>();
+                int totalFound = 0;
+                int totalNotFound = 0;
+
+                foreach (var result in results)
+                {
+                    allItems.AddRange(result.Items);
+                    totalFound += result.Found;
+                    totalNotFound += result.NotFound;
+                }
+
+                // Rarity rank for sorting
+                var rarityRank = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+                {
+                    { "mythic", 6 },
+                    { "legendary", 5 },
+                    { "epic", 4 },
+                    { "rare", 3 },
+                    { "uncommon", 2 },
+                    { "common", 1 },
+                    { "marvel", 0 },
+                    { "dc", 0 },
+                    { "icon", 0 },
+                    { "starwars", 0 }
+                };
+
+                // Sort all items by rarity and name
+                var sortedItems = allItems
+                    .OrderByDescending(item =>
+                    {
+                        if (item.IsExclusive)
+                            return rarityRank["mythic"];
+                        string rarity = item.ItemData?["rarity"]?["value"]?.ToString()?.ToLower() ?? "common";
+                        return rarityRank.ContainsKey(rarity) ? rarityRank[rarity] : 0;
+                    })
+                    .ThenBy(item => item.ItemData?["name"]?.ToString() ?? item.ItemId)
+                    .ToList();
+
+                int itemCount = sortedItems.Count;
+                if (itemCount == 0)
+                {
+                    Console.WriteLine("No items to display in combined image.");
+                    return;
+                }
+
+                // Calculate layout
+                int cols = (int)Math.Ceiling(Math.Sqrt(itemCount * 1.5));
+                int rows = (int)Math.Ceiling((double)itemCount / cols);
+
+                int thumbnailSize = Math.Max(60, Math.Min(150, 900 / cols));
+                int horizontalSpacing = Math.Max(8, thumbnailSize / 10);
+                int verticalSpacing = Math.Max(40, thumbnailSize / 2);
+                int textHeight = Math.Max(16, thumbnailSize / 6);
+                int padding = 3;
+
+                int margin = 60;
+                int canvasWidth = margin * 2 + cols * (thumbnailSize + horizontalSpacing);
+                int canvasHeight = margin * 2 + rows * (thumbnailSize + verticalSpacing + textHeight);
+
+                using var combinedImage = new Bitmap(canvasWidth, canvasHeight);
+                using var combinedGraphics = Graphics.FromImage(combinedImage);
+                combinedGraphics.Clear(Color.FromArgb(25, 25, 35));
+
+                var fontSize = Math.Max(12, thumbnailSize / 8);
+                var titleFontSize = Math.Max(24, (int)(fontSize * 1.8));
+                var font = new Font("Arial", fontSize);
+                var titleFont = new Font("Arial", titleFontSize);
+
+                // Draw main title
+                string title = $"All Cosmetics ({itemCount} ITEMS)";
+                var titleSize = combinedGraphics.MeasureString(title, titleFont);
+                combinedGraphics.DrawString(title, titleFont, Brushes.White, canvasWidth / 2 - titleSize.Width / 2, margin / 2);
+
+                // Draw items
+                for (int i = 0; i < sortedItems.Count; i++)
+                {
+                    var item = sortedItems[i];
+                    int row = i / cols;
+                    int col = i % cols;
+
+                    int x = margin + col * (thumbnailSize + horizontalSpacing);
+                    int y = margin + row * (thumbnailSize + verticalSpacing + textHeight) + 60;
+
+                    if (item.Found && item.Image != null)
+                    {
+                        var itemData = item.ItemData;
+                        string rarity = item.IsExclusive ? "mythic" : (itemData["rarity"]?["value"]?.ToString()?.ToLower() ?? "common");
+                        var bgColors = new Dictionary<string, Color>
+                        {
+                            { "common", Color.FromArgb(150, 150, 150) },
+                            { "uncommon", Color.FromArgb(96, 170, 58) },
+                            { "rare", Color.FromArgb(73, 172, 242) },
+                            { "epic", Color.FromArgb(177, 91, 226) },
+                            { "legendary", Color.FromArgb(211, 120, 65) },
+                            { "mythic", Color.FromArgb(235, 227, 88) },
+                            { "marvel", Color.FromArgb(197, 51, 52) },
+                            { "dc", Color.FromArgb(84, 117, 199) },
+                            { "icon", Color.FromArgb(63, 181, 181) },
+                            { "starwars", Color.FromArgb(32, 85, 128) }
+                        };
+                        var bgColor = bgColors.ContainsKey(rarity) ? bgColors[rarity] : Color.FromArgb(100, 100, 100);
+
+                        combinedGraphics.FillRectangle(Brushes.Black, x - 2, y - 2, thumbnailSize + 4, thumbnailSize + 4);
+                        combinedGraphics.FillRectangle(new SolidBrush(bgColor), x, y, thumbnailSize, thumbnailSize);
+                        combinedGraphics.DrawImage(item.Image, x, y, thumbnailSize, thumbnailSize);
+
+                        string nameToDisplay = itemData["name"]?.ToString() ?? item.ItemId;
+                        if (nameToDisplay.Length > thumbnailSize / 4)
+                        {
+                            nameToDisplay = nameToDisplay.Substring(0, thumbnailSize / 4) + "...";
+                        }
+
+                        int textY = y + thumbnailSize + 8;
+                        var textSize = combinedGraphics.MeasureString(nameToDisplay, font);
+                        var bgRect = new RectangleF(
+                            x + (thumbnailSize - textSize.Width) / 2 - padding,
+                            textY - padding,
+                            textSize.Width + 2 * padding,
+                            fontSize + 2 * padding
+                        );
+
+                        combinedGraphics.FillRectangle(new SolidBrush(Color.FromArgb(180, 0, 0, 0)), bgRect);
+                        combinedGraphics.DrawString(nameToDisplay, font, Brushes.Black, x + thumbnailSize / 2 + 1, textY + 1, new StringFormat { Alignment = StringAlignment.Center });
+                        combinedGraphics.DrawString(nameToDisplay, font, Brushes.White, x + thumbnailSize / 2, textY, new StringFormat { Alignment = StringAlignment.Center });
+                    }
+                    else
+                    {
+                        combinedGraphics.FillRectangle(Brushes.DarkGray, x, y, thumbnailSize, thumbnailSize);
+                        combinedGraphics.FillRectangle(new SolidBrush(Color.FromArgb(40, 40, 40)), x + 3, y + 3, thumbnailSize - 6, thumbnailSize - 6);
+
+                        string displayName = item.ItemId;
+                        if (displayName.Length > 12)
+                        {
+                            displayName = displayName.Substring(0, 10) + "...";
+                        }
+
+                        combinedGraphics.DrawString("?", titleFont, Brushes.Gray, x + thumbnailSize / 2, y + thumbnailSize / 2 - 10, new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center });
+                        combinedGraphics.DrawString(displayName, font, Brushes.Gray, x + thumbnailSize / 2, y + thumbnailSize / 2 + 15, new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center });
+
+                        int textY = y + thumbnailSize + 8;
+                        combinedGraphics.FillRectangle(new SolidBrush(Color.FromArgb(100, 30, 30)), x, textY, thumbnailSize, fontSize + 6);
+                        combinedGraphics.DrawString("Not Found", font, Brushes.Pink, x + thumbnailSize / 2, textY + 3, new StringFormat { Alignment = StringAlignment.Center });
+                    }
+                }
+
+                string combinedFilename = Path.Combine(ResultsFolder, "AllCosmetics.png");
+                combinedImage.Save(combinedFilename, ImageFormat.Png);
+                Console.WriteLine($"Created combined cosmetics image: {combinedFilename} with [{totalFound}] items found, [{totalNotFound}] not found", Color.GhostWhite);
+                Console.WriteLine($"Total time for combined image: [{(DateTime.Now - combinedStart).TotalSeconds:F2}]s", Color.GhostWhite);
 
                 double totalTime = (DateTime.Now - startTime).TotalSeconds;
                 Console.WriteLine($"\nTotal execution time: [{totalTime:F2}] seconds", Color.GhostWhite);
@@ -856,7 +1101,6 @@ namespace FortniteLocker
 
             if (passwordRequired)
             {
-         
                 Console.WriteLine("Check the email from Epic Games for the password.", Color.GhostWhite);
                 Console.Write("Enter PDF password : ");
                 password = Console.ReadLine()?.Trim();
