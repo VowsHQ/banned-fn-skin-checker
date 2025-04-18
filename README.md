@@ -79,8 +79,6 @@ Also updated the spacing between skins and made so most text will appear under t
 # Known Issues
 Pets don't display properly
 Some Items may have black/gray background
-Text may overlap on certain items with longer names
-Not all exclusives are shown
 
 # How It Works
 * The script extracts cosmetic item IDs from your Epic Games account data
