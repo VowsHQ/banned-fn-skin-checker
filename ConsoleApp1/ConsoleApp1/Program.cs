@@ -34,6 +34,34 @@ namespace FortniteLocker
             { "AthenaItemWrap", ("Wraps", "AthenaItemWrap.txt", "AthenaItemWrap.png") }
         };
 
+        private static readonly List<string> Keywords = new List<string>
+        {
+            // Account Details
+            "Account Id",
+            "Display Name",
+            "Created",
+            "Last Failed Login",
+            "Country",
+            // More Account Info
+            "Communication Language",
+            "Headless: false",
+            "Number Of Display Name Changed",
+            // Cosmetic Counts
+            "Total Cosmetics",
+            "Total Skins",
+            "Total Backblings",
+            "Total Pickaxes",
+            "Total Gliders",
+            "Total Contrails",
+            "Total Emotes",
+            "Total Music Packs",
+            "Total Wraps",
+            // Separators
+            "----- Account Details -----",
+            "----- More Account Details -----",
+            "----- Cosmetic Counts -----"
+        };
+
         private static readonly Regex Pattern = new Regex(@"(\bAthena\w+):\s*(.+)", RegexOptions.IgnoreCase);
         private static readonly Regex DatePattern = new Regex(@"\b(\d{4}-\d{2}-\d{2})\b|\[(\d{4}-\d{2}-\d{2})\]|\((\d{4}-\d{2}-\d{2})\)", RegexOptions.IgnoreCase);
 
@@ -71,7 +99,7 @@ namespace FortniteLocker
                     }
                     catch
                     {
-                        // Proceed to download if cached image fails to load
+                
                     }
                 }
 
@@ -107,12 +135,13 @@ namespace FortniteLocker
             return Regex.Replace(s.ToLower(), @"[^a-z0-9]", "");
         }
 
-        private static async Task<(Dictionary<string, List<string>> Items, Dictionary<string, DateTime> PurchaseDates)> ProcessPdfAsync(string filePath, string password = null)
+        private static async Task<(Dictionary<string, List<string>> Items, Dictionary<string, DateTime> PurchaseDates, Dictionary<string, int> CategoryCounts)> ProcessPdfAsync(string filePath, string password = null)
         {
             try
             {
                 var data = Categories.Keys.ToDictionary(key => key, key => new List<string>());
                 var purchaseDates = new Dictionary<string, DateTime>(StringComparer.OrdinalIgnoreCase);
+                var categoryCounts = Categories.Keys.ToDictionary(key => key, key => 0);
 
                 using (var reader = new PdfReader(filePath, new ReaderProperties().SetPassword(password != null ? System.Text.Encoding.UTF8.GetBytes(password) : null)))
                 using (var pdfDoc = new PdfDocument(reader))
@@ -150,7 +179,11 @@ namespace FortniteLocker
                                 if (category == "AthenaDance" && !itemId.StartsWith("eid-", StringComparison.OrdinalIgnoreCase))
                                     continue;
 
-                                data[category].Add(itemId);
+                                if (!data[category].Contains(itemId))
+                                {
+                                    data[category].Add(itemId);
+                                    categoryCounts[category]++;
+                                }
                                 if (category == "AthenaCharacter" && purchaseDate.HasValue)
                                 {
                                     purchaseDates[itemId] = purchaseDate.Value;
@@ -174,7 +207,7 @@ namespace FortniteLocker
                 }
 
                 Console.WriteLine("Processing complete. Files created in Checker Results subfolders.");
-                return (data, purchaseDates);
+                return (data, purchaseDates, categoryCounts);
             }
             catch (iText.Kernel.Exceptions.BadPasswordException)
             {
@@ -183,14 +216,101 @@ namespace FortniteLocker
             catch (Exception e)
             {
                 Console.WriteLine($"An error occurred: {e.Message}");
-                return (null, null);
+                return (null, null, null);
+            }
+        }
+
+        private static async Task ExtractInfoToTextFileAsync(string filePath, string password = null, Dictionary<string, int> categoryCounts = null)
+        {
+            try
+            {
+                var accountDetailsLines = new List<string>();
+                var moreAccountInfoLines = new List<string>();
+                var cosmeticCountLines = new List<string>();
+
+ 
+                using (var reader = new PdfReader(filePath, new ReaderProperties().SetPassword(password != null ? System.Text.Encoding.UTF8.GetBytes(password) : null)))
+                using (var pdfDoc = new PdfDocument(reader))
+                {
+                    for (int pageNum = 1; pageNum <= pdfDoc.GetNumberOfPages(); pageNum++)
+                    {
+                        var page = pdfDoc.GetPage(pageNum);
+                        var text = PdfTextExtractor.GetTextFromPage(page);
+
+                        foreach (var keyword in Keywords.Where(k => !k.StartsWith("Total ") && !k.StartsWith("-----")))
+                        {
+                            var regex = new Regex($@"\b{Regex.Escape(keyword)} *: *([^\n\r]+)", RegexOptions.IgnoreCase);
+                            var matches = regex.Matches(text);
+
+                            foreach (Match match in matches)
+                            {
+                                if (match.Groups[1].Success)
+                                {
+                                    string line = $" | {keyword} : {match.Groups[1].Value.Trim()}";
+                                    if (Keywords.Take(5).Contains(keyword)) 
+                                        accountDetailsLines.Add(line);
+                                    else 
+                                        moreAccountInfoLines.Add(line);
+                                }
+                            }
+                        }
+                    }
+                }
+
+  
+                if (categoryCounts != null)
+                {
+                    int totalCosmetics = categoryCounts.Values.Sum();
+                    cosmeticCountLines.Add($" | Total Cosmetics : {totalCosmetics}");
+                    cosmeticCountLines.Add($" | Total Skins : {categoryCounts.GetValueOrDefault("AthenaCharacter", 0)}");
+                    cosmeticCountLines.Add($" | Total Backblings : {categoryCounts.GetValueOrDefault("AthenaBackpack", 0)}");
+                    cosmeticCountLines.Add($" | Total Pickaxes : {categoryCounts.GetValueOrDefault("AthenaPickaxe", 0)}");
+                    cosmeticCountLines.Add($" | Total Gliders : {categoryCounts.GetValueOrDefault("AthenaGlider", 0)}");
+                    cosmeticCountLines.Add($" | Total Contrails : {categoryCounts.GetValueOrDefault("AthenaSkyDiveContrail", 0)}");
+                    cosmeticCountLines.Add($" | Total Emotes : {categoryCounts.GetValueOrDefault("AthenaDance", 0)}");
+                    cosmeticCountLines.Add($" | Total Music Packs : {categoryCounts.GetValueOrDefault("AthenaMusicPack", 0)}");
+                    cosmeticCountLines.Add($" | Total Wraps : {categoryCounts.GetValueOrDefault("AthenaItemWrap", 0)}");
+                }
+
+               
+                var outputLines = new List<string>();
+                if (accountDetailsLines.Any())
+                    outputLines.Add("----- Account Details -----");
+                outputLines.AddRange(accountDetailsLines.OrderBy(x => x));
+
+                if (moreAccountInfoLines.Any())
+                    outputLines.Add("----- More Account Details -----");
+                outputLines.AddRange(moreAccountInfoLines.OrderBy(x => x));
+
+                if (cosmeticCountLines.Any())
+                    outputLines.Add("----- Cosmetic Counts -----");
+                outputLines.AddRange(cosmeticCountLines);
+
+                if (outputLines.Any())
+                {
+                    var outputPath = Path.Combine(ResultsFolder, "extracted_info.txt");
+                    await File.WriteAllLinesAsync(outputPath, outputLines);
+                    Console.WriteLine($"Extracted data saved to {outputPath}");
+                }
+                else
+                {
+                    Console.WriteLine("No matching keywords found in the PDF.");
+                }
+            }
+            catch (iText.Kernel.Exceptions.BadPasswordException)
+            {
+                throw new Exception("Incorrect password for encrypted PDF.");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"An error occurred while extracting info: {e.Message}");
             }
         }
 
         private static async Task<bool> DownloadFortniteCosmeticsAsync()
         {
             const string url = "https://fortnite-api.com/v2/cosmetics/br";
-            Console.WriteLine("Downloading Fortnite cosmetics data...", Color.GhostWhite);
+            Console.WriteLine("Downloading Fortnite cosmetics data...");
 
             try
             {
@@ -202,7 +322,7 @@ namespace FortniteLocker
                     var data = await response.Content.ReadAsStringAsync();
                     var jsonData = JsonConvert.DeserializeObject<JObject>(data);
 
-                    Console.WriteLine($"Successfully retrieved {jsonData["data"].Count()} cosmetic items", Color.GhostWhite);
+                    Console.WriteLine($"Successfully retrieved {jsonData["data"].Count()} cosmetic items");
 
                     var outputPath = Path.Combine(ResultsFolder, "fortnite_cosmetics.json");
                     await File.WriteAllTextAsync(outputPath, data);
@@ -211,7 +331,7 @@ namespace FortniteLocker
                 }
                 else
                 {
-                    Console.WriteLine($"Error: API request failed with status code {response.StatusCode}", Color.GhostWhite);
+                    Console.WriteLine($"Error: API request failed with status code {response.StatusCode}");
                     return false;
                 }
             }
@@ -239,18 +359,18 @@ namespace FortniteLocker
 
         private static async Task CreateLockerImageAsync(Dictionary<string, DateTime> purchaseDates)
         {
-            Console.WriteLine("Starting create_locker_image function...", Color.GhostWhite);
+            Console.WriteLine("Starting create_locker_image function...");
             var startTime = DateTime.Now;
 
             try
             {
-                Console.WriteLine("Loading cosmetics data from JSON file...", Color.GhostWhite);
+                Console.WriteLine("Loading cosmetics data from JSON file...");
                 var loadStart = DateTime.Now;
                 var jsonPath = Path.Combine(ResultsFolder, "fortnite_cosmetics.json");
                 var cosmeticsData = JsonConvert.DeserializeObject<JObject>(await File.ReadAllTextAsync(jsonPath));
                 Console.WriteLine($"JSON loaded in {(DateTime.Now - loadStart).TotalSeconds:F2} seconds");
 
-                Console.WriteLine("Creating optimized lookup dictionaries...", Color.GhostWhite);
+                Console.WriteLine("Creating optimized lookup dictionaries...");
                 var dictStart = DateTime.Now;
 
                 var cosmeticsLookup = new Dictionary<string, JToken>(StringComparer.OrdinalIgnoreCase);
@@ -287,48 +407,49 @@ namespace FortniteLocker
 
                 Console.WriteLine($"Optimized dictionaries created in {(DateTime.Now - dictStart).TotalSeconds:F2} seconds");
 
-                // Exclusive/OG items across all categories
+   
                 var exclusiveItems = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    // Characters
-                    "cid_095_athena_commando_m_founder", //warpaint
-                    "cid_096_athena_commando_f_founder", // rose team leader
-                    "cid_296_athena_commando_m_math", //Prodigy
-                    "cid_360_athena_commando_m_techopsblue", //Carbon Commander
-                    "cid_138_athena_commando_m_psburnout", //Blue Striker
-                    "cid_114_athena_commando_f_tacticalwoodland", //Trailblazer
-                    "cid_386_athena_commando_m_streetopsstealth", //Stealth Reflex
-                    "cid_441_athena_commando_f_cyberscavengerblue", //neoversa
-                    "cid_a_062_athena_commando_f_alchemy_xd6gp", //Aloy
-                    "cid_964_athena_commando_m_historian_869bc", //Kratos
-                    "cid_971_Athena_Commando_M_Jupiter_S0Z6M", //MasterCheif
-                    "cid_760_athena_commando_f_neontightsuit", //astro jack
-                    "cid_748_athena_commando_f_hitman", //YellowJacket
-                    "cid_022_athena_commando_m_galaxy", // Galaxy
-                    "cid_295_athena_commando_m_carbideblue", // Eon
-                    "cid_313_athena_commando_m_venom", // Rogue Spider Knight
-                    "cid_584_athena_commando_m_borderlands", // Psycho Bandit
-                    "cid_235_athena_commando_m_bullseye", // Dark Vertex
-                    "cid_803_athena_commando_m_helmet", // Rue
-                    "cid_694_athena_commando_m_mogul", // Travis Scott
-                    "cid_013_athena_commando_f", // Renegade Raider
-                    "cid_014_athena_commando_m", // Aerial Assault Trooper
-                    "cid_513_athena_commando_f_neoncat", // Glow
-                    "cid_035_athena_commando_f_psblue", // Blue Team Leader
-                    "cid_614_athena_commando_f_tourbus", // Wildcat
-                    "cid_236_athena_commando_m_carbidewhite", // Double Helix
-                    "cid_350_athena_commando_m_honor", // Honor Guard
-                    "cid_428_athena_commando_f_historic", // Wonder
-                    "cid_290_athena_commando_m_bomber", // Royale Bomber
-                    "cid_036_athena_commando_m_enforcer", // The Reaper
-                    "cid_138_athena_commando_m_carbideblack", // Omega
-                    "cid_017_athena_commando_m_medieval", // Black Knight
-                    "cid_033_athena_commando_m_twitch", // Havoc
-                    "cid_034_athena_commando_f_twitch", // Sub Commander
-                    "cid_015_athena_commando_m", // Rogue Agent
-                    "cid_677_athena_commando_f_dieselpunk", // Iris (Roundabout)
-                    "cid_703_athena_commando_m_giftbox", // Ikonik
+                    "CID_327_Athena_Commando_M_BlueMystery", 
+                    "cid_095_athena_commando_m_founder",
+                    "cid_096_athena_commando_f_founder",
+                    "cid_296_athena_commando_m_math",
+                    "cid_360_athena_commando_m_techopsblue",
+                    "cid_138_athena_commando_m_psburnout",
+                    "cid_114_athena_commando_f_tacticalwoodland",
+                    "cid_386_athena_commando_m_streetopsstealth",
+                    "cid_441_athena_commando_f_cyberscavengerblue",
+                    "cid_a_062_athena_commando_f_alchemy_xd6gp",
+                    "cid_964_athena_commando_m_historian_869bc",
+                    "cid_971_Athena_Commando_M_Jupiter_S0Z6M",
+                    "cid_760_athena_commando_f_neontightsuit",
+                    "cid_748_athena_commando_f_hitman",
+                    "cid_022_athena_commando_m_galaxy",
+                    "cid_295_athena_commando_m_carbideblue",
+                    "cid_313_athena_commando_m_venom",
+                    "cid_584_athena_commando_m_borderlands",
+                    "cid_235_athena_commando_m_bullseye",
+                    "cid_803_athena_commando_m_helmet",
+                    "cid_694_athena_commando_m_mogul",
+                    "cid_013_athena_commando_f",
+                    "cid_014_athena_commando_m",
+                    "cid_513_athena_commando_f_neoncat",
+                    "cid_035_athena_commando_f_psblue",
+                    "cid_614_athena_commando_f_tourbus",
+                    "cid_236_athena_commando_m_carbidewhite",
+                    "cid_350_athena_commando_m_honor",
+                    "cid_428_athena_commando_f_historic",
+                    "cid_290_athena_commando_m_bomber",
+                    "cid_036_athena_commando_m_enforcer",
+                    "cid_138_athena_commando_m_carbideblack",
+                    "cid_017_athena_commando_m_medieval",
+                    "cid_033_athena_commando_m_twitch",
+                    "cid_034_athena_commando_f_twitch",
+                    "cid_015_athena_commando_m",
+                    "cid_677_athena_commando_f_dieselpunk",
+                    "cid_703_athena_commando_m_giftbox",
                     // Normalized names for Characters
+                    "Cobalt",
                     "Rose team leader",
                     "prodigy",
                     "Carbon Commando",
@@ -382,15 +503,15 @@ namespace FortniteLocker
                     "Pickaxe_ID_256_TechOpsBlue",
                     "Pickaxe_ID_178_SpeedyMidnight",
                     "Pickaxe_ID_116_Celestial",
-                    "Pickaxe_ID_077_CarbideWhite", //Resonator
-                    "Pickaxe_ID_088_PSBurnout", //Controller
-                    "Pickaxe_ID_237_Warpaint", //Mean Streak
-                    "pickaxe_id_294_candycane", // Merry Mint
-                    "pickaxe_id_099_modernmilitaryred", //pinpoint
-                    "pickaxe_id_039_tacticalblack", //instigator
-                    "Pickaxe_ID_044_TacticalUrbanHammer", //Tenderizer
-                    "Pickaxe_ID_153_RoseLeader", //rose glow
-                    //Normalized pickaxe names
+                    "Pickaxe_ID_077_CarbideWhite",
+                    "Pickaxe_ID_088_PSBurnout",
+                    "Pickaxe_ID_237_Warpaint",
+                    "pickaxe_id_294_candycane",
+                    "pickaxe_id_099_modernmilitaryred",
+                    "pickaxe_id_039_tacticalblack",
+                    "Pickaxe_ID_044_TacticalUrbanHammer",
+                    "Pickaxe_ID_153_RoseLeader",
+                    // Normalized pickaxe names
                     "Drive Shaft",
                     "Trusty no.2",
                     "AC/DC",
@@ -416,6 +537,7 @@ namespace FortniteLocker
                     "Tenderizer",
                     "Rose Glow",
                     // Gliders
+                    "Glider_Warthog",
                     "FounderGlider",
                     "FounderUmbrella",
                     "Glider_ID_013_PSBlue",
@@ -430,6 +552,7 @@ namespace FortniteLocker
                     "Glider_ID_161_RoseLeader",
                     "Glider_ID_196_CycloneMale",
                     // Normalized glider names
+                    "Mako",
                     "FounderGlider",
                     "FounderUmbrella",
                     "Blue Streak",
@@ -444,14 +567,14 @@ namespace FortniteLocker
                     "Rose Rider",
                     "Astro World Cyclone",
                     // Backpacks
-                    "bid_027_carbideblue", // Eon Shield
-                    "bid_002_medieval", // Black Shield (Black Knight)
+                    "bid_027_carbideblue",
+                    "bid_002_medieval",
                     "eonshield",
                     "blackshield",
                     // Emotes
-                    "eid_tourbus", // Wildcat emote
+                    "eid_tourbus",
                     // Contrails, Music, Wraps
-                    "wrap_022_galactic", // Galaxy wrap
+                    "wrap_022_galactic",
                     "Wrap_016_CuddleTeam",
                     "galactic",
                     "Cuddle Hearts"
@@ -465,7 +588,6 @@ namespace FortniteLocker
                     if (string.IsNullOrEmpty(itemId))
                         return false;
 
-                    // Handle Ghoul Trooper and Skull Trooper
                     if (category == "AthenaCharacter")
                     {
                         string normalizedId = itemId.ToLower();
@@ -473,10 +595,9 @@ namespace FortniteLocker
                         {
                             if (purchaseDates.TryGetValue(itemId, out DateTime date))
                             {
-                                // Season 2: Oct 26, 2017 - Dec 13, 2017
                                 return date >= new DateTime(2017, 10, 26) && date <= new DateTime(2017, 12, 13);
                             }
-                            return false; // No date, assume non-OG
+                            return false;
                         }
                         if (normalizedId.Contains("cid_029_athena_commando_m_halloween") || normalizedId.Contains("skulltrooper"))
                         {
@@ -484,20 +605,18 @@ namespace FortniteLocker
                             {
                                 return date >= new DateTime(2017, 10, 26) && date <= new DateTime(2017, 12, 13);
                             }
-                            return false; // No date, assume non-OG
+                            return false;
                         }
 
-                        // Check for skins absent from shop for 1000+ days
                         if (itemData != null)
                         {
                             var shopHistory = itemData["shopHistory"];
                             if (shopHistory == null || !shopHistory.HasValues)
                             {
-                                // No shop history (e.g., exclusive skins)
                                 return exclusiveItems.Contains(itemId.ToLower()) || exclusiveItems.Contains(NormalizeString(itemData["name"]?.ToString()));
                             }
 
-                            DateTime cutoff = new DateTime(2022, 7, 11); // 1000 days before April 16, 2025
+                            DateTime cutoff = new DateTime(2022, 7, 11);
                             DateTime lastAppearance = DateTime.MinValue;
                             foreach (var date in shopHistory)
                             {
@@ -509,21 +628,18 @@ namespace FortniteLocker
 
                             if (lastAppearance != DateTime.MinValue && lastAppearance <= cutoff)
                             {
-                                return true; // Not in shop for 1000+ days
+                                return true;
                             }
                         }
                     }
 
-                    // Check itemId directly
                     if (exclusiveItems.Contains(itemId.ToLower()))
                         return true;
 
-                    // Check normalized itemId
                     string normalizedName = NormalizeString(itemId);
                     if (exclusiveItems.Contains(normalizedName))
                         return true;
 
-                    // Check itemData id and name
                     if (itemData != null)
                     {
                         string dataId = itemData["id"]?.ToString()?.ToLower();
@@ -542,7 +658,6 @@ namespace FortniteLocker
                 {
                     itemId = itemId.Trim().ToLower();
 
-                    // Prioritize exclusive items
                     if (exclusiveItems.Contains(itemId) && typeSpecificLookup[category].ContainsKey(itemId))
                         return typeSpecificLookup[category][itemId];
 
@@ -637,7 +752,6 @@ namespace FortniteLocker
 
                     Console.WriteLine($"Category: {category}, Items found: {itemIds.Count}");
 
-                    // Rarity rank for sorting
                     var rarityRank = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
                     {
                         { "mythic", 6 },
@@ -652,7 +766,6 @@ namespace FortniteLocker
                         { "starwars", 0 }
                     };
 
-                    // Collect item data
                     var itemsWithData = new List<(string ItemId, JToken ItemData, bool IsExclusive)>();
                     foreach (var itemId in itemIds)
                     {
@@ -661,7 +774,6 @@ namespace FortniteLocker
                         itemsWithData.Add((itemId, itemData, isExclusive));
                     }
 
-                    // Sort items by rarity (descending) and name
                     var sortedItems = itemsWithData
                         .OrderByDescending(item =>
                         {
@@ -696,9 +808,13 @@ namespace FortniteLocker
                     var titleFont = new Font("Arial", titleFontSize);
 
                     string categoryName = category.Replace("Athena", "");
-                    string title = $"{categoryName} ({itemCount} ITEMS)";
-                    var titleSize = graphics.MeasureString(title, titleFont);
-                    graphics.DrawString(title, titleFont, Brushes.White, canvasWidth / 2 - titleSize.Width / 2, margin / 2);
+                    string leftText = "discord.gg/fuckniggas";
+                    string centerText = $"{categoryName} ({itemCount} ITEMS)";
+
+                    var centerTextSize = graphics.MeasureString(centerText, titleFont);
+
+                    graphics.DrawString(leftText, titleFont, Brushes.White, margin, margin / 2);
+                    graphics.DrawString(centerText, titleFont, Brushes.White, canvasWidth / 2 - centerTextSize.Width / 2, margin / 2);
 
                     int foundCount = 0;
                     int notFoundCount = 0;
@@ -865,8 +981,8 @@ namespace FortniteLocker
                     lockerImage.Save(filename, ImageFormat.Png);
 
                     double categoryTime = (DateTime.Now - categoryStart).TotalSeconds;
-                    Console.WriteLine($"Created image for {category}: [{foundCount}] items found, [{notFoundCount}] not found", Color.GhostWhite);
-                    Console.WriteLine($"Total time for {category}: [{categoryTime:F2}]s", Color.GhostWhite);
+                    Console.WriteLine($"Created image for {category}: [{foundCount}] items found, [{notFoundCount}] not found");
+                    Console.WriteLine($"Total time for {category}: [{categoryTime:F2}]s");
 
                     return (category, foundCount, notFoundCount, categoryTime, processedItems);
                 }
@@ -875,11 +991,9 @@ namespace FortniteLocker
                 var tasks = Categories.Keys.Select(category => ProcessCategoryAsync(category)).ToList();
                 results.AddRange(await Task.WhenAll(tasks));
 
-                // Generate combined image
-                Console.WriteLine("\nGenerating combined cosmetics image...", Color.GhostWhite);
+                Console.WriteLine("\nGenerating combined cosmetics image...");
                 var combinedStart = DateTime.Now;
 
-                // Collect all items from all categories
                 var allItems = new List<(string ItemId, JToken ItemData, bool IsExclusive, Image Image, bool Found)>();
                 int totalFound = 0;
                 int totalNotFound = 0;
@@ -891,7 +1005,6 @@ namespace FortniteLocker
                     totalNotFound += result.NotFound;
                 }
 
-                // Rarity rank for sorting
                 var rarityRank = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
                 {
                     { "mythic", 6 },
@@ -906,7 +1019,6 @@ namespace FortniteLocker
                     { "starwars", 0 }
                 };
 
-                // Sort all items by rarity and name
                 var sortedItems = allItems
                     .OrderByDescending(item =>
                     {
@@ -925,7 +1037,6 @@ namespace FortniteLocker
                     return;
                 }
 
-                // Calculate layout
                 int cols = (int)Math.Ceiling(Math.Sqrt(itemCount * 1.5));
                 int rows = (int)Math.Ceiling((double)itemCount / cols);
 
@@ -947,12 +1058,14 @@ namespace FortniteLocker
                 var titleFontSize = Math.Max(24, (int)(baseFontSize * 1.8));
                 var titleFont = new Font("Arial", titleFontSize);
 
-                // Draw main title
-                string title = $"All Cosmetics ({itemCount} ITEMS)";
-                var titleSize = combinedGraphics.MeasureString(title, titleFont);
-                combinedGraphics.DrawString(title, titleFont, Brushes.White, canvasWidth / 2 - titleSize.Width / 2, margin / 2);
+                string leftText = "discord.gg/fuckniggas";
+                string centerText = $"All Cosmetics ({itemCount} Items)";
 
-                // Draw items
+                var centerSize = combinedGraphics.MeasureString(centerText, titleFont);
+
+                combinedGraphics.DrawString(leftText, titleFont, Brushes.White, margin, margin / 2);
+                combinedGraphics.DrawString(centerText, titleFont, Brushes.White, canvasWidth / 2 - centerSize.Width / 2, margin / 2);
+
                 for (int i = 0; i < sortedItems.Count; i++)
                 {
                     var item = sortedItems[i];
@@ -1051,16 +1164,16 @@ namespace FortniteLocker
 
                 string combinedFilename = Path.Combine(ResultsFolder, "AllCosmetics.png");
                 combinedImage.Save(combinedFilename, ImageFormat.Png);
-                Console.WriteLine($"Created combined cosmetics image: {combinedFilename} with [{totalFound}] items found, [{totalNotFound}] not found", Color.GhostWhite);
-                Console.WriteLine($"Total time for combined image: [{(DateTime.Now - combinedStart).TotalSeconds:F2}]s", Color.GhostWhite);
+                Console.WriteLine($"Created combined cosmetics image: {combinedFilename} with [{totalFound}] items found, [{totalNotFound}] not found");
+                Console.WriteLine($"Total time for combined image: [{(DateTime.Now - combinedStart).TotalSeconds:F2}]s");
 
                 double totalTime = (DateTime.Now - startTime).TotalSeconds;
-                Console.WriteLine($"\nTotal execution time: [{totalTime:F2}] seconds", Color.GhostWhite);
+                Console.WriteLine($"\nTotal execution time: [{totalTime:F2}] seconds");
                 Console.WriteLine("Summary:");
                 foreach (var result in results.OrderBy(r => r.Category))
                 {
                     Console.Clear();
-                    Console.WriteLine("Summary (press enter to see next page):", Color.GhostWhite);
+                    Console.WriteLine("Summary (press enter to see next page):");
                     Console.WriteLine($"  {result.Category}: [{result.Found}] found, [{result.NotFound}] not found, [{result.Time:F2}s]");
                     Console.WriteLine("Saved images in Skin Results folder.");
                     Console.ReadLine();
@@ -1068,7 +1181,7 @@ namespace FortniteLocker
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error in create_locker_image: {e.Message}", Color.GhostWhite);
+                Console.WriteLine($"Error in create_locker_image: {e.Message}");
                 Console.WriteLine(e.StackTrace);
             }
         }
@@ -1089,112 +1202,148 @@ namespace FortniteLocker
                 }
             }
             Console.Title = "[discord.gg/fuckniggas] - made with <3 by vows";
-            Console.WriteLine("[discord.gg/fuckniggas] - made with <3 by vows", Color.GhostWhite);
+            Console.WriteLine("[discord.gg/fuckniggas] - made with <3 by vows");
             Console.WriteLine("");
-            string filePath = null;
 
             while (true)
             {
-                Console.Write("Please enter PDF file path : ", Color.GhostWhite);
-                filePath = Console.ReadLine()?.Trim();
+                Console.WriteLine("Select an option:");
+                Console.WriteLine("(1) Skin Check");
+                Console.WriteLine("(2) Extract Info From PDF");
+                Console.Write("Enter your choice (1 or 2): ");
+                string choice = Console.ReadLine()?.Trim();
 
-                if (string.IsNullOrEmpty(filePath))
+                if (choice != "1" && choice != "2")
                 {
-                    Console.WriteLine("No file path provided. Exiting program.", Color.GhostWhite);
-                    return;
-                }
-
-                if (!filePath.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
-                {
-                    Console.WriteLine("Error: Must be a pdf file.", Color.GhostWhite);
+                    Console.WriteLine("Invalid choice. Please enter 1 or 2.");
                     continue;
                 }
 
-                if (!Path.IsPathRooted(filePath))
+                string filePath = null;
+                while (true)
                 {
-                    filePath = Path.Combine(Directory.GetCurrentDirectory(), filePath);
+                    Console.Write("Please enter PDF file path : ");
+                    filePath = Console.ReadLine()?.Trim();
+
+                    if (string.IsNullOrEmpty(filePath))
+                    {
+                        Console.WriteLine("No file path provided. Exiting program.");
+                        return;
+                    }
+
+                    if (!filePath.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+                    {
+                        Console.WriteLine("Error: Must be a pdf file.");
+                        continue;
+                    }
+
+                    if (!Path.IsPathRooted(filePath))
+                    {
+                        filePath = Path.Combine(Directory.GetCurrentDirectory(), filePath);
+                    }
+
+                    if (!File.Exists(filePath))
+                    {
+                        Console.WriteLine($"Error: The file path does not exist.");
+                        continue;
+                    }
+
+                    break;
                 }
 
-                if (!File.Exists(filePath))
-                {
-                    Console.WriteLine($"Error: The file path does not exist.", Color.GhostWhite);
-                    continue;
-                }
-
-                break;
-            }
-
-            string password = null;
-            bool passwordRequired = false;
-
-            try
-            {
-                using var reader = new PdfReader(filePath);
-                using var pdfDoc = new PdfDocument(reader);
-            }
-            catch (iText.Kernel.Exceptions.BadPasswordException)
-            {
-                passwordRequired = true;
-            }
-            catch (iText.Kernel.Exceptions.PdfException e)
-            {
-                Console.WriteLine($"Error: The file is not a valid PDF: {e.Message}. Exiting program.", Color.GhostWhite);
-                return;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Error accessing PDF: {e.Message}. Exiting program.", Color.GhostWhite);
-                return;
-            }
-
-            if (passwordRequired)
-            {
-                Console.WriteLine("Check the email from Epic Games for the password.", Color.GhostWhite);
-                Console.Write("Enter PDF password : ");
-                password = Console.ReadLine()?.Trim();
-
-                if (string.IsNullOrEmpty(password))
-                {
-                    Console.WriteLine("No password provided. Exiting program.");
-                    return;
-                }
+                string password = null;
+                bool passwordRequired = false;
 
                 try
                 {
-                    using var reader = new PdfReader(filePath, new ReaderProperties().SetPassword(System.Text.Encoding.UTF8.GetBytes(password)));
+                    using var reader = new PdfReader(filePath);
                     using var pdfDoc = new PdfDocument(reader);
-                    Console.WriteLine("Password accepted!", Color.GhostWhite);
                 }
                 catch (iText.Kernel.Exceptions.BadPasswordException)
                 {
-                    Console.WriteLine("Incorrect password. Exiting program.", Color.GhostWhite);
+                    passwordRequired = true;
+                }
+                catch (iText.Kernel.Exceptions.PdfException e)
+                {
+                    Console.WriteLine($"Error: The file is not a valid PDF: {e.Message}. Exiting program.");
                     return;
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Error processing PDF: {e.Message}. Exiting program.", Color.GhostWhite);
+                    Console.WriteLine($"Error accessing PDF: {e.Message}. Exiting program.");
                     return;
                 }
-            }
 
-            Console.WriteLine("\nExtracting data from PDF..", Color.GhostWhite);
-            var (items, purchaseDates) = await ProcessPdfAsync(filePath, password);
-            if (items == null || purchaseDates == null)
-            {
-                Console.WriteLine("Failed to process PDF. Exiting program.", Color.GhostWhite);
-                return;
-            }
+                if (passwordRequired)
+                {
+                    Console.WriteLine("Check the email from Epic Games for the password.");
+                    Console.Write("Enter PDF password : ");
+                    password = Console.ReadLine()?.Trim();
 
-            Console.WriteLine("\nChecking for cosmetics data...", Color.GhostWhite);
-            if (await EnsureCosmeticsDataAsync())
-            {
-                Console.WriteLine("\nGenerating locker images...", Color.GhostWhite);
-                await CreateLockerImageAsync(purchaseDates);
-                Console.WriteLine("\nPDF extracted, images compiled.", Color.GhostWhite);
-            }
-            else
-            {
-                Console.WriteLine("Failed to obtain cosmetics data. Cannot create locker images.", Color.GhostWhite);
+                    if (string.IsNullOrEmpty(password))
+                    {
+                        Console.WriteLine("No password provided. Exiting program.");
+                        return;
+                    }
+
+                    try
+                    {
+                        using var reader = new PdfReader(filePath, new ReaderProperties().SetPassword(System.Text.Encoding.UTF8.GetBytes(password)));
+                        using var pdfDoc = new PdfDocument(reader);
+                        Console.WriteLine("Password accepted!");
+                    }
+                    catch (iText.Kernel.Exceptions.BadPasswordException)
+                    {
+                        Console.WriteLine("Incorrect password. Exiting program.");
+                        return;
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine($"Error processing PDF: {e.Message}. Exiting program.");
+                        return;
+                    }
+                }
+
+                if (choice == "1")
+                {
+                    Console.WriteLine("\nExtracting data from PDF...");
+                    var (items, purchaseDates, categoryCounts) = await ProcessPdfAsync(filePath, password);
+                    if (items == null || purchaseDates == null || categoryCounts == null)
+                    {
+                        Console.WriteLine("Failed to process PDF. Exiting program.");
+                        return;
+                    }
+
+                    Console.WriteLine("\nChecking for cosmetics data...");
+                    if (await EnsureCosmeticsDataAsync())
+                    {
+                        Console.WriteLine("\nGenerating locker images...");
+                        await CreateLockerImageAsync(purchaseDates);
+                        Console.WriteLine("\nPDF extracted, images compiled.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Failed to obtain cosmetics data. Cannot create locker images.");
+                    }
+
+ 
+                    Console.WriteLine("\nExtracting info to text file...");
+                    await ExtractInfoToTextFileAsync(filePath, password, categoryCounts);
+                }
+                else if (choice == "2")
+                {
+                    Console.WriteLine("\nExtracting data from PDF...");
+                    var (items, purchaseDates, categoryCounts) = await ProcessPdfAsync(filePath, password);
+                    if (items == null || purchaseDates == null || categoryCounts == null)
+                    {
+                        Console.WriteLine("Failed to process PDF. Exiting program.");
+                        return;
+                    }
+                    await ExtractInfoToTextFileAsync(filePath, password, categoryCounts);
+                    Console.WriteLine("\nData extraction complete.");
+                }
+
+                break;
             }
         }
     }
