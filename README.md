@@ -4,55 +4,34 @@ This tool allows you to view all your Fortnite cosmetic items by extracting them
 # Update Logs
 ```
 
-Checker now provides an image of ALL Cosmetics
-Also updated the spacing between skins and made so most text will appear under the skins instead of overlapping.
+there are now 2 modules in the checker
 
-(Skins that now show as exclusive)
-+ Yellow Jacket
-+ Astro Jack
-+ BlueStriker
-+ Trailblazer
-+ StealthReflex
-+ Neoversa
-+ Aloy
-+ Kratos
-+ MasterCheif
-+ Carbon Commando
-+ Warpaint
-+ Rose Team Leader
-+ Prodigy
+(skin checker)
+(data extractor) 
 
-(Pickaxes that now show as exclusive)
-+ Merry mint
-+ Trusty no.2
-+ AC/DC
-+ Snowtooth
-+ Dark Splitter
-+ Cymitar
-+ Electri-claw
-+ plasma carrot
-+ synaptic hatchets
-+ twin talons
-+ perfect point
-+ (Much much more)
+the data extracter will extract the following data from the pdf
 
-(Gliders that now show as exclusive)
-+ FounderGlider/Umbrella
-+ Blue Streak
-+ Discovery
-+ Flappy
-+ SLipstream
-+ Aurora
-+ Wild Streak
-+ Dark Forerunner
-+ Stealth Pivot
-+ Rose Rider
-+ Coaxial
-+ Astro World Cyclone
-+ (and more)
+----- Account Details -----
+ | Account Id :  Account Status: 
+ | Country : US
+ | Created :  Last Login: 
+ | Display Name :  Email:
+ | Last Failed Login :  Failed Login Attempts: 
+----- More Account Details -----
+ | Communication Language : 
+ | Number Of Display Name Changed :
+----- Cosmetic Counts -----
+ | Total Cosmetics : 
+ | Total Skins : 
+ | Total Backblings : 
+ | Total Pickaxes : 
+ | Total Gliders : 
+ | Total Contrails : 
+ | Total Emotes : 
+ | Total Music Packs : 
+ | Total Wraps : 
 
-(Wraps that will now show as exclusive)
-+ Cuddle hearts
+Also added some skins that were not showing as exclusive.
 ```
 
 # Requirements
